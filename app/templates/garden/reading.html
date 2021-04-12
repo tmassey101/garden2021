@@ -1,0 +1,31 @@
+<html>
+  <body>
+
+    <h1>Add Manual Reading</h1>
+    <form method="POST" action="/reading">
+      <input type="text" name="temperature">
+      <input type="submit" value="Add">
+    </form>
+
+    <h1>Readings</h1>
+    <table>
+        
+        {% for reading in readings %}
+        <tr>
+            <td>
+                <p>{{ reading.timestamp }} (utc)</p>
+            </td>
+            <td>
+                <p>{{ reading.local }} (local)</p>
+            </td>
+            <td>
+                <p>{{ reading.temperature }}</p>
+            </td>
+            
+
+        </tr>   
+        {% endfor %}
+    </table>   
+
+  </body>
+</html>

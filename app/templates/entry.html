@@ -1,0 +1,39 @@
+<html>
+  <body>
+
+    <h1>Add Book</h1>
+    <form method="POST" action="/entry">
+      <input type="text" name="title">
+      <input type="submit" value="Add">
+    </form>
+
+    <h1>Books</h1>
+    <table>
+        
+        {% for book in books %}
+        <tr>
+            <td>
+                <p>{{book.title}}</p>
+            </td>
+            <td>
+                <form method="POST" action="./update">
+                    <input type="hidden" value="{{book.title}}" name="oldtitle">
+                    <input type="text" value="{{book.title}}" name="newtitle">
+                    <input type="submit" value="Update">
+                </form>
+            </td>
+            <td>
+                <form method="POST" action="./delete">
+                    <input type="hidden" value="{{book.title}}" name="title">
+                    <input type="submit" value="Delete">
+                </form>
+            </td>
+        </tr>   
+        {% endfor %}
+    </table>
+    
+
+    
+
+  </body>
+</html>
