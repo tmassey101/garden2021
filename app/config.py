@@ -12,7 +12,6 @@ class Config():
     SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI = os.environ.get('JAWSDB_URL') or \
         'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
     
-    
     'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
