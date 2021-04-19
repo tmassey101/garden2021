@@ -18,6 +18,9 @@ app.config.from_object('app.config.Config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
+
 
 #bc = Bcrypt(app) 
 
