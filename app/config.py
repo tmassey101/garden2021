@@ -9,7 +9,7 @@ class Config():
 	
     SECRET_KEY = config('SECRET_KEY', default='S3crEt_007')
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get('JAWSDB_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('JAWSDB_URL') #or \
+        #'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
