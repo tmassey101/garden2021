@@ -3,9 +3,12 @@ import os
 from flask            import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
+from dotenv import load_dotenv
 
 #from flask_login      import LoginManager
 #from flask_bcrypt     import Bcrypt
+
+load_dotenv()  # take environment variables from .env.
 
 # Grabs the folder where the script runs.
 basedir = os.path.abspath(os.path.dirname(__file__))

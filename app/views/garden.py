@@ -12,9 +12,6 @@ from app.models.models import Reading
 from datetime import datetime
 from pytz import timezone
 
-x = [1,2,3,4,5]
-y = [0.1, 0.3, 1.1, 1.5, 1.4]
-
 @app.route('/garden', methods=['GET', 'POST'])
 def garden():
 
