@@ -1,7 +1,7 @@
 # API routes for common tasks such as data entry
 
 import os
-from flask import Flask, request, redirect
+from flask import Flask, request
 
 # App modules
 from app        import app, db
@@ -9,9 +9,7 @@ from app.models.models import Reading
 from datetime import datetime
 from pytz import timezone
 
-'''
-
-# function to convert 
+# function to convert timestamp to local timezone
 def convertTime(readings):
     
     format = "%Y-%m-%d %H:%M:%S %Z%z"
@@ -25,19 +23,14 @@ def convertTime(readings):
     
     return readings
 
-@app.route('/insert', methods=['POST'])
-def insertReading:
-
-    timestamp = request.json['timestamp']
-    id = request.json['id']
-    temperature = request.json['temperature']
-
-    newReading = 
-
-    newReading = convertTime(newReading)
-    db.session.add(newReading)
-    db.session.commit()
-
-    return 
-
-'''
+@app.route('/insert', methods=['GET'])
+def insertReading():
+    if request.args.get("t"):
+        t = Reading(temperature=request.args.get("t"))
+        db.session.add(t)
+        db.session.commit()
+    
+    readings = Reading.query.all()
+    localReadings = convertTime(readings)
+        
+    return render_template("garden/reading.html", readings=localReadings)

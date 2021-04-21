@@ -53,8 +53,8 @@ def convertTime(readings):
 def reading():
 
     if request.form:
-        reading = Reading(temperature=request.form.get("temperature"))
-        db.session.add(reading)
+        t = Reading(temperature=request.form.get("temperature"))
+        db.session.add(t)
         db.session.commit()
     
     readings = Reading.query.all()
@@ -77,3 +77,15 @@ def newReading(type, value):
     localReadings = convertTime(readings)
 
     return render_template("garden/reading.html", readings=readings)
+
+@app.route('/insert', methods=['GET'])
+def insertReading():
+    if request.args.get("t"):
+        t = Reading(temperature=request.args.get("t"))
+        db.session.add(t)
+        db.session.commit()
+    
+    readings = Reading.query.all()
+    localReadings = convertTime(readings)
+        
+    return render_template("garden/reading.html", readings=localReadings)
