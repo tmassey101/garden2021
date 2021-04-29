@@ -1,7 +1,7 @@
 # API routes for common tasks such as data entry
 
 import os
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 # App modules
 from app        import app, db
@@ -25,10 +25,23 @@ def convertTime(readings):
 
 @app.route('/insert', methods=['GET'])
 def insertReading():
+    print("Inserting value")
     if request.args.get("t"):
         t = Reading(temperature=request.args.get("t"))
         db.session.add(t)
         db.session.commit()
+    
+    readings = Reading.query.all()
+    localReadings = convertTime(readings)
+        
+    return render_template("garden/reading.html", readings=localReadings)
+
+@app.route('/newreading/<temp>', methods=['GET','POST'])
+def newReading(temp):
+    
+    t = Reading(temperature=temp)
+    db.session.add(t)
+    db.session.commit()
     
     readings = Reading.query.all()
     localReadings = convertTime(readings)

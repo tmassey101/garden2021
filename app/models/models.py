@@ -10,7 +10,7 @@ class Book(db.Model):
 class Reading(db.Model):
     __tablename__ = 'readings'
     id = db.Column('id', db.Integer, unique=True, nullable=False, primary_key=True)
-    timestamp = db.Column('entry time', db.DateTime, default=datetime.utcnow())
+    timestamp = db.Column('entry time', db.DateTime, default=datetime.utcnow)
     temperature = db.Column('temperature', db.Float, default=0.0)
 
     def __init__(self, temperature):

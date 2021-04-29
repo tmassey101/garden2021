@@ -62,30 +62,4 @@ def reading():
         
     return render_template("garden/reading.html", readings=localReadings)
 
-@app.route('/newreading/<type>/<value>', methods=['GET','POST'])
-def newReading(type, value):
 
-    if str(type) == 'temperature':
-            reading = Reading(temperature=value)
-            db.session.add(reading)
-            db.session.commit()
-    
-    else:
-        return('Error: Attribute type "%s" not found' % type)
-
-    readings = Reading.query.all()
-    localReadings = convertTime(readings)
-
-    return render_template("garden/reading.html", readings=readings)
-
-@app.route('/insert', methods=['GET'])
-def insertReading():
-    if request.args.get("t"):
-        t = Reading(temperature=request.args.get("t"))
-        db.session.add(t)
-        db.session.commit()
-    
-    readings = Reading.query.all()
-    localReadings = convertTime(readings)
-        
-    return render_template("garden/reading.html", readings=localReadings)

@@ -34,7 +34,7 @@ def initialize_database():
 from app.models.models import Book, Reading
 
 # Import routing, models and Start the App
-from app.views import views, garden
+from app.views import views, garden, api
 from app.models import models
 
 
