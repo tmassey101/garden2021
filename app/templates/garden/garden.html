@@ -4,7 +4,8 @@
 <head>
 	<title>Line Chart</title>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
-	<!---<script src="utils.js" type='text/javascript'></script>-->
+	<!--<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>-->
+    <!---<script src="utils.js" type='text/javascript'></script>-->
 	<style>
 	canvas{
 		-moz-user-select: none;
@@ -24,17 +25,13 @@
 	</div>
 	<br>
 	<br>
-	<button id="randomizeData">Randomize Data</button>
-	<button id="addDataset">Add Dataset</button>
-	<button id="removeDataset">Remove Dataset</button>
-	<button id="addData">Add Data</button>
-	<button id="removeData">Remove Data</button>
-	<script>
+
+	<script>          
         var ctx = document.getElementById('myChart').getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: {{ graph_x }},
+                labels: {{graph_x | safe}},
                 datasets: [{
                     label: '# of Votes',
                     data: {{graph_y}},
@@ -63,7 +60,10 @@
                         ticks: {
                             beginAtZero: true
                         }
-                    }]
+                    }],
+                    x: {
+                        type: 'timeseries',
+                    }
                 }
             }
         });

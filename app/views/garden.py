@@ -16,16 +16,21 @@ from pytz import timezone
 def garden():
 
     readings = Reading.query.all()
-    
-    x = []
-    y = []
+    readings = convertTime(readings)
+    format = "%d/%m/%Y %H:%M:%S"
 
-    for reading in readings:
-        x.append(reading.id)
-        y.append(reading.temperature)
+    y = []
+    x = []
     
-    print(x)
-    print(y)
+    
+    for reading in readings:
+        y.append(reading.temperature)
+        xRaw = reading.timestamp
+        xProc = xRaw.strftime(format)
+        x.append(xProc)
+
+    print(y[1])
+    print(x[1])
 
     return render_template("garden/garden.html", graph_x=x, graph_y=y)
 
