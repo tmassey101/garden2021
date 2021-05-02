@@ -19,10 +19,10 @@ while True:
         # If the response was successful, no Exception will be raised
         response.raise_for_status()
     except Exception as err:
-        print(f'Other error occurred: {err}')  # Python 3.6
+        print('Other error occurred: %s', err)  
     else:
         print('Success! Posted reading = %f to %s' % (reading, url) )
 
-    print('Waiting 5 secs...')
-    time.sleep(5)
+    print('Waiting 60 secs...')
+    time.sleep(60)
 
