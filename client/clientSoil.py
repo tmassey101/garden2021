@@ -22,6 +22,7 @@ ss = Seesaw(i2c_bus, addr=0x36)
 
 # API address
 link = "https://garden2021.herokuapp.com/insert?t="
+link2 = "something else here"
 
 while True:
     
@@ -37,7 +38,8 @@ while True:
 
     except: 
         # Get sensor reading
-        temp = -1.0    # Placeholder
+        temp = 0    # Placeholder
+        touch = 300
 
     # Combine link address with reading
     url = link+str(temp)
@@ -46,11 +48,15 @@ while True:
         response = requests.get(url)
         # If the response was successful, no Exception will be raised
         response.raise_for_status()
+
     except Exception as err:
-        print('Other error occurred: %s', err)  
+        print('Other error occurred: %s', err)
+        time.sleep(5)
+
     else:
         print('Success! Posted reading = %f to %s' % (temp, url) )
+        print('Waiting 60 secs...')
+        time.sleep(60)
 
-    print('Waiting 60 secs...')
-    time.sleep(60)
+   
 

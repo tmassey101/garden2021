@@ -27,8 +27,11 @@ def convertTime(readings):
 def insertReading():
     print("Inserting value")
     if request.args.get("t"):
-        t = Reading(temperature=request.args.get("t"))
-        db.session.add(t)
+        reading = Reading   (temperature=request.args.get("temp"), 
+                            moisture=request.args.get("mois"), 
+                            sensorID=request.args.get("sensorID"), 
+                            unitID=request.args.get("unitID"))
+        db.session.add(reading)
         db.session.commit()
     
     readings = Reading.query.all()
