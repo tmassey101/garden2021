@@ -26,11 +26,8 @@ def convertTime(readings):
 @app.route('/insert', methods=['GET'])
 def insertReading():
     print("Inserting value")
-    if request.args.get("t"):
-        reading = Reading   (temperature=request.args.get("temp"), 
-                            moisture=request.args.get("mois"), 
-                            sensorID=request.args.get("sensorID"), 
-                            unitID=request.args.get("unitID"))
+    if request.args.get("temp"):
+        reading = Reading(temperature=request.args.get("temp"), moisture=request.args.get("mois"), sensorID=request.args.get("sensorID"), unitID=request.args.get("unitID"))
         db.session.add(reading)
         db.session.commit()
     
