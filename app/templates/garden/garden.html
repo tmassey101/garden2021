@@ -3,10 +3,10 @@
 
 <head>
 	<title>Line Chart</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
-	<!--<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>-->
-    <!---<script src="utils.js" type='text/javascript'></script>-->
-	<style>
+	<script src="https://npmcdn.com/chart.js@latest/dist/chart.min.js"></script>
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+    
+    <style>
 	canvas{
 		-moz-user-select: none;
 		-webkit-user-select: none;
@@ -26,48 +26,66 @@
 	<br>
 	<br>
 
-	<script>          
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: {{graph_x | safe}},
-                datasets: [{
-                    label: '# of Votes',
-                    data: {{graph_y}},
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
+	<script>
+    // === include 'setup' then 'config' above ===
+    const labels = {{graph_x|safe}};
+    const y1 = {{graph_y1|safe}};
+    const y2 = {{graph_y2|safe}};
+    const color1 = 'rgb(255, 99, 132)';
+    const color2 = 'rgb(54, 162, 235)';
+
+    const data = {
+        labels: labels,
+        datasets: [{
+            label: 'temperature',
+            data: y1,
+            backgroundColor: color1,
+            yAxisID: 'y',
+        }, {
+            label: 'moisture',
+            data: y2,
+            backgroundColor: color2,
+            yAxisID: 'y1',
+        }]
+    }
+    
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            interaction: {
+            mode: 'index',
+            intersect: false,
             },
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }],
-                    x: {
-                        type: 'timeseries',
-                    }
+            stacked: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Chart.js Line Chart - Multi Axis'
                 }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+            
+                    // grid line settings
+                    grid: {
+                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                    },
+                },
             }
-        });
-	    </script>
+        },
+    });
+    </script>
 </body>
 
 </html>
