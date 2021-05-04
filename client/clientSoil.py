@@ -24,6 +24,7 @@ ss = Seesaw(i2c_bus, addr=0x36)
 link = "https://garden2021.herokuapp.com/insert?"
 unitID = 1
 sensorID = 1
+waitTime = 300
 
 
 
@@ -38,10 +39,12 @@ while True:
         # read temperature from the temperature sensor
         temp = ss.get_temp()
  
-        #print("temp: " + str(temp) + "  moisture: " + str(touch))
+        print("temp: " + str(temp) + "  moisture: " + str(touch))
         time.sleep(1)
 
     except: 
+        print('Sensor issue?')
+        print('Sensor issue?', file = f)
         # Get sensor reading
         temp = 0    # Placeholder
         touch = 300
@@ -55,16 +58,16 @@ while True:
         response.raise_for_status()
 
     except Exception as err:
-        print('Other error occurred: %s' % err, file = f)
-        print('Waiting 5 seconds to retry', file = f)
+        print('Other error occurred: %s. Waiting 5 seconds to retry' % err, file = f)
+        print('Other error occurred: %s. Waiting 5 seconds to retry' % err)
         f.close()
         time.sleep(5)
 
     else:
-        print('Success! Posted reading = %f to %s' % (temp, url), file = f )
-        print('Waiting 300 secs...', file = f)
+        print('Success! Posted reading = %f to %s. Now waiting %d secs...' % (temp, link, waitTime), file = f )
+        print('Success! Posted reading = %f to %s. Now waiting %d secs...' % (temp, link, waitTime))
         f.close()
-        time.sleep(300)
+        time.sleep(waitTime)
 
    
 

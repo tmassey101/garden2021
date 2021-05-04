@@ -31,8 +31,10 @@
     const labels = {{graph_x|safe}};
     const y1 = {{graph_y1|safe}};
     const y2 = {{graph_y2|safe}};
-    const color1 = 'rgb(255, 99, 132)';
-    const color2 = 'rgb(54, 162, 235)';
+    const color1 = 'rgb(255, 99, 132, 1)';
+    const color2 = 'rgb(54, 162, 235, 1)';
+    const bordercolor1 = 'rgb(255, 99, 132, 0.5)';
+    const bordercolor2 = 'rgb(54, 162, 235, 0.5)';
 
     const data = {
         labels: labels,
@@ -40,11 +42,13 @@
             label: 'temperature',
             data: y1,
             backgroundColor: color1,
+            borderColor: bordercolor1,
             yAxisID: 'y',
         }, {
             label: 'moisture',
             data: y2,
             backgroundColor: color2,
+            borderColor: bordercolor2,
             yAxisID: 'y1',
         }]
     }
@@ -63,7 +67,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: 'Chart.js Line Chart - Multi Axis'
+                    text: 'Soil Sensor Readings'
                 }
             },
             scales: {
@@ -71,12 +75,14 @@
                     type: 'linear',
                     display: true,
                     position: 'left',
+                    beginAtZero: true,
                 },
                 y1: {
                     type: 'linear',
                     display: true,
                     position: 'right',
-            
+                    min: 400,
+                    max: 1000,
                     // grid line settings
                     grid: {
                     drawOnChartArea: false, // only want the grid lines for one axis to show up
