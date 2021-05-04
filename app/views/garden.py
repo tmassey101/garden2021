@@ -11,6 +11,7 @@ from app        import app, db
 from app.models.models import Reading
 from datetime import datetime
 from pytz import timezone
+import pendulum
 
 @app.route('/garden', methods=['GET', 'POST'])
 def garden():
@@ -23,12 +24,13 @@ def garden():
     y2 = []
     x = []
     
-    
     for reading in readings:
         y1.append(reading.temperature)
         y2.append(reading.moisture)
-        xRaw = reading.timestamp
+        xLast = reading.timestamp
+        xRaw = reading.local
         xProc = xRaw.strftime(format)
+        print(xProc)
         x.append(xProc)
 
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
@@ -44,12 +46,13 @@ def convertTime(readings):
     
     format = "%Y-%m-%d %H:%M:%S %Z%z"
     targettz = 'Europe/London'
+    tz = pendulum.timezone(targettz)
 
     for reading in readings:
         timestamp = reading.timestamp
-        timestamp = timestamp.astimezone(timezone('UTC'))
-        timestamp_local = timestamp.astimezone(timezone(targettz))
-        reading.local = timestamp_local
+        p = pendulum.instance(timestamp)
+        q = p.in_timezone(tz)
+        reading.local = q
     
     return readings
 
