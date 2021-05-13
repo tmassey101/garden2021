@@ -17,6 +17,29 @@ import pendulum
 def garden():
 
     readings = Reading.query.all()
+    readings = readings[-2000:]
+    readings = convertTime(readings)
+    format = "%Y-%m-%dT%H:%M:%S"
+
+    y1 = []
+    y2 = []
+    x = []
+    
+    for reading in readings:
+
+        y1.append(reading.temperature)
+        y2.append(reading.moisture)
+        xLast = reading.timestamp
+        xRaw = reading.local
+        xProc = xRaw.strftime(format)
+        x.append(xProc)
+
+    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
+
+@app.route('/gardenCopy', methods=['GET', 'POST'])
+def gardenCopy():
+
+    readings = Reading.query.all()
     readings = convertTime(readings)
     format = "%d/%m/%Y %H:%M:%S"
 
@@ -30,10 +53,14 @@ def garden():
         xLast = reading.timestamp
         xRaw = reading.local
         xProc = xRaw.strftime(format)
-        print(xProc)
         x.append(xProc)
 
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
+
+@app.route('/timeexample', methods=['GET', 'POST'])
+def timeexample():
+
+    return render_template("garden/timeseriesexample.html")
 
 @app.route('/gardenhome', methods=['GET', 'POST'])
 def gardenhome():
@@ -44,7 +71,6 @@ def gardenhome():
 # function to convert 
 def convertTime(readings):
     
-    format = "%Y-%m-%d %H:%M:%S %Z%z"
     targettz = 'Europe/London'
     tz = pendulum.timezone(targettz)
 
@@ -52,6 +78,10 @@ def convertTime(readings):
         timestamp = reading.timestamp
         p = pendulum.instance(timestamp)
         q = p.in_timezone(tz)
+
+        # Formats timestamp to ISO8601 format
+        q.isoformat()
+
         reading.local = q
     
     return readings
