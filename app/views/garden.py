@@ -17,7 +17,7 @@ import pendulum
 def garden():
 
     readings = Reading.query.all()
-    readings = readings[-2000:]
+    #readings = readings[-2000:]
     readings = convertTime(readings)
     format = "%Y-%m-%dT%H:%M:%S"
 
