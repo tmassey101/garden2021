@@ -11,10 +11,10 @@ from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env.
 
 # Grabs the folder where the script runs.
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 
 app.config.from_object('app.config.Config')
 
