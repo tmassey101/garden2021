@@ -69,6 +69,23 @@ def gardenhome():
 
     return render_template("garden/gardenindex.html")
 
+@app.route('/reading', methods=['GET', 'POST'])
+def reading():
+
+    if request.form:
+        t = Reading(temperature=request.form.get("temperature"))
+        db.session.add(t)
+        db.session.commit()
+    
+    readings = Reading.query.all()
+
+    if request.args.get("q"):
+        q = int(request.args.get("q"))
+        readings = readings[-q:]
+
+    localReadings = convertTime(readings)
+        
+    return render_template("garden/reading.html", readings=localReadings)
 
 # function to convert 
 def convertTime(readings):
@@ -88,17 +105,6 @@ def convertTime(readings):
     
     return readings
 
-@app.route('/reading', methods=['GET', 'POST'])
-def reading():
 
-    if request.form:
-        t = Reading(temperature=request.form.get("temperature"))
-        db.session.add(t)
-        db.session.commit()
-    
-    readings = Reading.query.all()
-    localReadings = convertTime(readings)
-        
-    return render_template("garden/reading.html", readings=localReadings)
 
 
