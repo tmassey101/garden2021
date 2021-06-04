@@ -10,6 +10,7 @@
 import requests
 from random import random
 import time
+import datetime
 
 from board import SCL, SDA
 import busio
@@ -25,49 +26,55 @@ link = "https://garden2021.herokuapp.com/insert?"
 unitID = 1
 sensorID = 1
 waitTime = 300
+errorWait = 150
+logfile = "log.txt"
 
+def readSensor():
+    # read moisture level through capacitive touch pad
+    touch = ss.moisture_read()
 
+    # read temperature from the temperature sensor
+    temp = ss.get_temp()
+
+    print("temp: " + str(temp) + "  moisture: " + str(touch))
+    time.sleep(1)
+    return (touch,temp)
+
+def writeLog(logfile, data):
+
+    currDate = str(datetime.datetime.now())
+    logdata = data+" - "+currDate
+
+    with open(logfile, 'a') as f:
+        f.write('\n'+logdata)
+    f.close()
+    
+    return
 
 while True:
     
-    f = open("log.txt", "a")
-    
     try: 
-        # read moisture level through capacitive touch pad
-        touch = ss.moisture_read()
- 
-        # read temperature from the temperature sensor
-        temp = ss.get_temp()
- 
-        print("temp: " + str(temp) + "  moisture: " + str(touch))
-        time.sleep(1)
+        touch, temp = readSensor()
 
-    except: 
-        print('Sensor issue?')
-        print('Sensor issue?', file = f)
-        # Get sensor reading
-        temp = 0    # Placeholder
-        touch = 300
-
-    # Combine link address with reading
-    url = link+"temp="+str(temp)+"&mois="+str(touch)+"&unitID="+str(unitID)+"&sensorID="+str(sensorID)
-
-    try:
+        # Combine link address with reading
+        url = link+"temp="+str(temp)+"&mois="+str(touch)+"&unitID="+str(unitID)+"&sensorID="+str(sensorID)
+        
+        # Send HTTP request to DB
         response = requests.get(url)
+
         # If the response was successful, no Exception will be raised
         response.raise_for_status()
-
-    except Exception as err:
-        print('Other error occurred: %s. Waiting 5 seconds to retry' % err, file = f)
-        print('Other error occurred: %s. Waiting 5 seconds to retry' % err)
-        f.close()
-        time.sleep(5)
-
-    else:
-        print('Success! Posted reading = %f to %s. Now waiting %d secs...' % (temp, link, waitTime), file = f )
-        print('Success! Posted reading = %f to %s. Now waiting %d secs...' % (temp, link, waitTime))
-        f.close()
+        
+        print('Success! Posted reading = %f to %s. Now waiting %d secs' % (temp, link, waitTime))
         time.sleep(waitTime)
-
-   
-
+         
+        
+    except Exception as err:
+        errorMsg = str(err)
+        print('Other error occurred: %s. Waiting %d seconds to retry' % (errorMsg, errorWait) )
+        writeLog(logfile, errorMsg)
+        time.sleep(errorWait)
+        
+        # Get sensor reading defaults
+        temp = 0    # Placeholder
+        touch = 300   
