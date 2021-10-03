@@ -31,7 +31,7 @@ def insertReading():
         db.session.add(reading)
         db.session.commit()
     
-    readings = Reading.query.all()
+    readings = Reading.query.order_by(Reading.timestamp.desc()).all()
     localReadings = convertTime(readings)
         
     return render_template("garden/reading.html", readings=localReadings)
