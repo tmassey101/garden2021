@@ -15,12 +15,14 @@ class Reading(db.Model):
     moisture = db.Column('moisture', db.Float, default=300)
     sensorID = db.Column('sensorID', db.Integer, default=0)
     unitID = db.Column('unitID', db.Integer, default=0)
+    batV = db.Column('batteryV', db.Float, default=0)
 
-    def __init__(self, temperature, moisture, sensorID, unitID):
+    def __init__(self, temperature, moisture, batV, sensorID, unitID):
         self.temperature = temperature
         self.moisture = moisture
         self.sensorID = sensorID
         self.unitID = unitID
+        self.batV = batV
 
     def to_json(self):
         return dict(id=self.name, temperature=self.datetime)
