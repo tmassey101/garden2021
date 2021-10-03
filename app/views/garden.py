@@ -13,11 +13,12 @@ from datetime import datetime
 from pytz import timezone
 import pendulum
 
-@app.route('/garden', methods=['GET', 'POST'])
-def garden():
+def queryReadings(values=None):
 
+    values = values
     readings = Reading.query.all()
-    #readings = readings[-2000:]
+    if values != None:
+        readings = readings[-values:]
     readings = convertTime(readings)
     format = "%Y-%m-%dT%H:%M:%S"
 
@@ -34,29 +35,18 @@ def garden():
         xProc = xRaw.strftime(format)
         x.append(xProc)
 
+    return (x, y1, y2) 
+
+@app.route('/garden', methods=['GET', 'POST'])
+def garden():
+
+    (x,y1,y2) = queryReadings()
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
 
 @app.route('/garden500', methods=['GET', 'POST'])
 def garden500():
 
-    readings = Reading.query.all()
-    readings = readings[-500:]
-    readings = convertTime(readings)
-    format = "%Y-%m-%dT%H:%M:%S"
-
-    y1 = []
-    y2 = []
-    x = []
-    
-    for reading in readings:
-
-        y1.append(reading.temperature)
-        y2.append(reading.moisture)
-        xLast = reading.timestamp
-        xRaw = reading.local
-        xProc = xRaw.strftime(format)
-        x.append(xProc)
-
+    (x,y1,y2) = queryReadings(values=500)
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
