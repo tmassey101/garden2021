@@ -57,7 +57,8 @@ def timeexample():
 @app.route('/gardenhome', methods=['GET', 'POST'])
 def gardenhome():
 
-    return render_template("garden/gardenindex.html")
+    (x,y1,y2) = queryReadings()
+    return render_template("garden/gardenindex.html", graph_x=x, graph_y1=y1, graph_y2=y2)
 
 @app.route('/reading', methods=['GET', 'POST'])
 def reading():
