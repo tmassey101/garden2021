@@ -58,11 +58,6 @@ def garden():
     print(unitList)
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2, unitList=unitList, id=id)
 
-@app.route('/garden500', methods=['GET', 'POST'])
-def garden500():
-    (x,y1,y2) = queryReadings(values=500, id=1)
-    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
-
 @app.route('/timeexample', methods=['GET', 'POST'])
 def timeexample():
     return render_template("garden/timeseriesexample.html")
