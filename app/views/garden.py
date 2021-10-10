@@ -13,10 +13,9 @@ from datetime import datetime
 from pytz import timezone
 import pendulum
 
-def queryReadings(values=None):
+def queryReadings(values=None, id=1):
 
-    values = values
-    readings = Reading.query.all()
+    readings = Reading.query.filter_by(unitID = id).all()
     if values != None:
         readings = readings[-values:]
     readings = convertTime(readings)
@@ -35,23 +34,37 @@ def queryReadings(values=None):
         xProc = xRaw.strftime(format)
         x.append(xProc)
 
-    return (x, y1, y2) 
+    return (x, y1, y2)
+
+def queryUnits():
+    unitList = []
+    units = Reading.query.with_entities(Reading.unitID).distinct()
+    for unit in units:
+        unitList.append(unit.unitID)
+    return unitList
 
 @app.route('/garden', methods=['GET', 'POST'])
 def garden():
+           
+    if request.args.get('id') is None:
+        id = 1
+    else: id = int(request.args.get('id'))
+    if request.args.get('values') is None:
+        values = None
+    else: values =int(request.args.get('values'))
 
-    (x,y1,y2) = queryReadings()
-    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
+    unitList = queryUnits()
+    (x,y1,y2) = queryReadings(values=values,id=id)
+    print(unitList)
+    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2, unitList=unitList, id=id)
 
 @app.route('/garden500', methods=['GET', 'POST'])
 def garden500():
-
-    (x,y1,y2) = queryReadings(values=500)
+    (x,y1,y2) = queryReadings(values=500, id=1)
     return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
 def timeexample():
-
     return render_template("garden/timeseriesexample.html")
 
 @app.route('/gardenhome', methods=['GET', 'POST'])

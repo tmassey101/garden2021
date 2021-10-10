@@ -20,7 +20,17 @@
 
     <h1>Soil Sensor Readings</h1>
     <br>
-	<br>   
+    <br>
+    Choose a Unit:
+    <br>
+        <SELECT name="device" selected=" " onChange="location = this.value;">
+            <option value="" selected disabled hidden>Choose here</option>
+            {% for u in unitList %}
+                <OPTION value=./garden?id={{u}}>{{u}}</option>
+            {% endfor %}
+        </SELECT>
+    <br><br>
+    <h4>Unit ID: {{id}}</h4>   
     <div id="tester" style="width:800px;height:400px;"></div>
     <br>
     <br>
