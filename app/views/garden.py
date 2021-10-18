@@ -55,8 +55,10 @@ def garden():
 
     unitList = queryUnits()
     (x,y1,y2) = queryReadings(values=values,id=id)
-    print(unitList)
-    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2, unitList=unitList, id=id)
+    lastX = x[-1]
+    print(lastX)
+    
+    return render_template("garden/garden.html", graph_x=x, graph_y1=y1, graph_y2=y2, unitList=unitList, id=id, lastX=lastX)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
 def timeexample():
