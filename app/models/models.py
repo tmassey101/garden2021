@@ -1,5 +1,5 @@
-from app         import db
-from datetime    import *
+from app  import db
+from datetime       import *
 
 class Book(db.Model):
     title = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
@@ -12,7 +12,7 @@ class Reading(db.Model):
     id = db.Column('id', db.Integer, unique=True, nullable=False, primary_key=True)
     timestamp = db.Column('entryTime', db.DateTime, default=datetime.utcnow)
     temperature = db.Column('temperature', db.Float, default=0.0)
-    moisture = db.Column('moisture', db.Float, default=300)
+    moisture = db.Column('moisture', db.Float, default=500)
     sensorID = db.Column('sensorID', db.Integer, default=0)
     unitID = db.Column('unitID', db.Integer, default=0)
     batV = db.Column('batteryV', db.Float, default=0)
