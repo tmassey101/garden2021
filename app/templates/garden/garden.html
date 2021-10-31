@@ -37,7 +37,8 @@
     <br>
     <h2>Unit ID: {{id}}</h2>
     <h3>Last X: {{lastX}}</h3><br>  
-    <div id="tester" style="width:800px;height:400px;"></div><br>
+    <div id="main" style="width:800px;height:600px;"></div><br>
+    <!--<div id="second" style="width:800px;height:400px;"></div><br>-->
     <img src="{{ url_for('static', filename='assets/img/outsidePi.jpg') }}" height="510">
     
 
@@ -50,30 +51,34 @@
     const labels = {{graph_x|safe}};
     const y1 = {{graph_y1|safe}};
     const y2 = {{graph_y2|safe}};
+    const y3 = {{graph2_y|safe}};
 
     const color1 = 'rgb(255, 99, 132, 1)';
     const color2 = 'rgb(54, 162, 235, 1)';
+    const color3 = 'rgb(230, 191, 0, 1)';
     const bordercolor1 = 'rgb(255, 99, 132, 0.5)';
     const bordercolor2 = 'rgb(54, 162, 235, 0.5)';
+    const bordercolor3 = 'rgb(230, 191, 0, 0.5)';
 
     const data1 = []
     const data2 = []
-    const x1 = []
-    const x2 = []
+    const data3 = []
+    const x = []
 
     for(i = 0; i < labels.length; i++){
         ts = formatTimestamp(labels[i]);
         console.log(labels[i]);
         data1.push(y1[i]);
         data2.push(y2[i]);
-        x1.push[labels[i]];
-        x2.push[labels[i]];
+        data3.push(y3[i])
+        x.push[labels[i]];
+        //x2.push[labels[i]];
     }
 
-    console.log(data1);
-    console.log(x1);
-    console.log(data2);
-    console.log(x2);
+    //console.log(data1);
+    console.log(x);
+    //console.log(data2);
+    console.log(data3);
     
 	var trace1 = {
     x: labels,
@@ -82,7 +87,7 @@
     type: 'scatter',
     mode: 'lines',
     line: {
-        color: 'rgb(219, 64, 82)',
+        color: color1,
         width: 3
     }
     };
@@ -95,26 +100,57 @@
     type: 'scatter',
     mode: 'lines',
     line: {
-        color: 'rgb(55, 128, 191)',
+        color: color2,
         width: 1
     }
     };
 
-    var data = [trace1, trace2];
-
-    var layout = {
-    title: 'Soil Sensor Readings',
-    yaxis: {title: 'Temperature'},
-    yaxis2: {
-        title: 'Moisture Content',
-        titlefont: {color: 'rgb(148, 103, 189)'},
-        tickfont: {color: 'rgb(148, 103, 189)'},
-        overlaying: 'y',
-        side: 'right'
+    
+    var trace3 = {
+    x: labels,
+    y: data3,
+    name: 'Battery Voltage',
+    yaxis: 'y',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+        color: color3,
+        width: 3
     }
     };
 
-    Plotly.newPlot('tester', data, layout);
+    var data = [trace1, trace2, trace3];
+
+    var layout = {
+    title: 'Soil Readings',
+    showlegend: true,
+	legend: {
+        x : 0.05,
+        y : 1,
+        "orientation": "v"
+    },
+    yaxis: {
+        title: 'Temperature (&#8451;)/ Battery (V)',
+        range: [0, 30]
+    },
+    yaxis2: {
+        title: 'Moisture Content',
+        //titlefont: {color: color2},
+        //tickfont: {color: color2},
+        overlaying: 'y',
+        side: 'right',
+        range: [750, 850]
+    }
+    };
+
+    var dataB = [trace3];
+    var layout2 = {
+    title: 'Battery Status',
+    yaxis: {title: 'Battery Voltage'}
+    };
+
+    Plotly.newPlot('main', data, layout);
+    Plotly.newPlot('second', dataB, layout2);
 
     </script>
 </body>
