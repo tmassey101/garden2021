@@ -20,7 +20,7 @@ def queryReadings(values=None, id=1):
         readings = readings[-values:]
     readings = convertTime(readings)
     format = "%Y-%m-%dT%H:%M:%S"
-
+    print(readings)
     t = []
     m = []
     x = []
@@ -56,6 +56,7 @@ def garden():
 
     unitList = queryUnits()
     (x,t,m,b) = queryReadings(values=values,id=id)
+    print(x)
     lastX = x[-1]
     print(lastX)
     

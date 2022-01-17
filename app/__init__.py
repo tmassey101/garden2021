@@ -2,7 +2,7 @@ import os
 
 from flask            import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate #, MigrateCommand
 from dotenv import load_dotenv
 
 #from flask_login      import LoginManager
