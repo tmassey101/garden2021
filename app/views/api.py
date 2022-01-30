@@ -45,9 +45,6 @@ def insertReading():
     reading = Reading(recordtime, temperature, moisture, batV, sensorID, unitID)
     db.session.add(reading)
     db.session.commit()
-    
-    readings = Reading.query.order_by(Reading.timestamp.desc()).all()
-    localReadings = convertTime(readings)
         
     return "Success"
 
