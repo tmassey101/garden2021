@@ -51,7 +51,7 @@ def garden():
         id = 1
     else: id = int(request.args.get('id'))
     if request.args.get('values') is None:
-        values = None
+        values = 500 #default last 500 values to limit loads
     else: values =int(request.args.get('values'))
 
     unitList = queryUnits()
