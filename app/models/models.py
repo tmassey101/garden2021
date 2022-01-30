@@ -1,4 +1,3 @@
-#from asyncio.windows_events import NULL
 from app import db
 from datetime import datetime
 
