@@ -1,6 +1,5 @@
 # API routes for common tasks such as data entry
 
-from asyncio.windows_events import NULL
 import os
 from flask import Flask, request, render_template
 
@@ -30,14 +29,14 @@ def insertReading():
 
     if request.args.get("rtime"): 
         recordtime = request.args.get("rtime")
-    else: recordtime = NULL
+    else: recordtime = None
 
     if request.args.get("temp"): temperature = request.args.get("temp")
-    else: temperature = NULL
+    else: temperature = None
     if request.args.get("mois"): moisture = request.args.get("mois")
-    else: moisture = NULL
+    else: moisture = None
     if request.args.get("bat"): batV = request.args.get("bat")
-    else: batV = NULL
+    else: batV = None
     if request.args.get("sensorID"): sensorID = request.args.get("sensorID")
     else: sensorID = 0
     if request.args.get("unitID"): unitID = request.args.get("unitID")

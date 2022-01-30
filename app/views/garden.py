@@ -20,7 +20,6 @@ def queryReadings(values=None, id=1):
         readings = readings[-values:]
     readings = convertTime(readings)
     format = "%Y-%m-%dT%H:%M:%S"
-    print(readings)
     t = []
     m = []
     x = []
@@ -58,7 +57,7 @@ def garden():
     (x,t,m,b) = queryReadings(values=values,id=id)
     #print(x)
     lastX = x[-1]
-    #print(lastX)
+    print(lastX)
     
     return render_template("garden/garden.html", graph_x=x, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, id=id, lastX=lastX)
 
