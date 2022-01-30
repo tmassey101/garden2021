@@ -1,5 +1,6 @@
 # API routes for common tasks such as data entry
 
+from asyncio.windows_events import NULL
 import os
 from flask import Flask, request, render_template
 
@@ -27,26 +28,31 @@ def convertTime(readings):
 def insertReading():
     print("Inserting value")
 
+    if request.args.get("rtime"): 
+        recordtime = request.args.get("rtime")
+    else: recordtime = NULL
+
     if request.args.get("temp"): temperature = request.args.get("temp")
-    else: temperature = 0.0
+    else: temperature = NULL
     if request.args.get("mois"): moisture = request.args.get("mois")
-    else: moisture = 500
+    else: moisture = NULL
     if request.args.get("bat"): batV = request.args.get("bat")
-    else: batV = 0.0
+    else: batV = NULL
     if request.args.get("sensorID"): sensorID = request.args.get("sensorID")
     else: sensorID = 0
     if request.args.get("unitID"): unitID = request.args.get("unitID")
     else: unitID = 0
 
-    reading = Reading(temperature, moisture, batV, sensorID, unitID)
+    reading = Reading(recordtime, temperature, moisture, batV, sensorID, unitID)
     db.session.add(reading)
     db.session.commit()
     
     readings = Reading.query.order_by(Reading.timestamp.desc()).all()
     localReadings = convertTime(readings)
         
-    return render_template("garden/reading.html", readings=localReadings)
+    return "Success"
 
+'''
 @app.route('/newreading/<temp>', methods=['GET','POST'])
 def newReading(temp):
     
@@ -58,3 +64,4 @@ def newReading(temp):
     localReadings = convertTime(readings)
         
     return render_template("garden/reading.html", readings=localReadings)
+    '''

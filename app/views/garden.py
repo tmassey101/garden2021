@@ -80,7 +80,7 @@ def reading():
         db.session.add(t)
         db.session.commit()
     
-    readings = Reading.query.order_by(Reading.timestamp.desc()).all()
+    readings = Reading.query.order_by(Reading.timestamp.desc()).limit(1000).all()
 
     if request.args.get("q"):
         q = int(request.args.get("q"))

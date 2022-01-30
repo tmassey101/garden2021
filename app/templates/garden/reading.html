@@ -8,12 +8,25 @@
     </form>
 
     <h1>Readings</h1>
-    <table>
+    <table style="width: 100%; border: 1px solid black; "">
+        <tr>
+            <th>DB Timestamp</th>
+            <th>Record Timestamp</th>
+            <th>Local TZ Time</th>
+            <th>Temperature</th>
+            <th>Moisture</th>
+            <th>Battery Voltage</th>
+            <th>UnitID</th>
+            <th>SensorID</th>
+        </tr>
         
         {% for reading in readings %}
         <tr>
             <td>
                 <p>{{ reading.timestamp }} (utc)</p>
+            </td>
+            <td>
+                <p>{{ reading.recordtime }} (utc)</p>
             </td>
             <td>
                 <p>{{ reading.local }} (local)</p>
