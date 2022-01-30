@@ -13,11 +13,11 @@ class Reading(db.Model):
     id = db.Column('id', db.Integer, unique=True, nullable=False, primary_key=True)
     timestamp = db.Column('entryTime', db.DateTime, default=datetime.utcnow)
     recordtime = db.Column('recordtime', db.DateTime, default=datetime.utcnow)
-    temperature = db.Column('temperature', db.Float, default=NULL)
-    moisture = db.Column('moisture', db.Float, default=NULL)
-    sensorID = db.Column('sensorID', db.Integer, default=0.0)
+    temperature = db.Column('temperature', db.Float, default=0)
+    moisture = db.Column('moisture', db.Float, default=0)
+    sensorID = db.Column('sensorID', db.Integer, default=0)
     unitID = db.Column('unitID', db.Integer, default=0)
-    batV = db.Column('batteryV', db.Float, default=NULL)
+    batV = db.Column('batteryV', db.Float, default=0)
 
     def __init__(self, recordtime, temperature, moisture, batV, sensorID, unitID):
         self.recordtime = recordtime
