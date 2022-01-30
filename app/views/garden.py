@@ -56,9 +56,9 @@ def garden():
 
     unitList = queryUnits()
     (x,t,m,b) = queryReadings(values=values,id=id)
-    print(x)
+    #print(x)
     lastX = x[-1]
-    print(lastX)
+    #print(lastX)
     
     return render_template("garden/garden.html", graph_x=x, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, id=id, lastX=lastX)
 
