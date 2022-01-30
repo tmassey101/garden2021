@@ -1,6 +1,6 @@
-from asyncio.windows_events import NULL
-from app  import db
-from datetime       import *
+#from asyncio.windows_events import NULL
+from app import db
+from datetime import *
 
 class Book(db.Model):
     title = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
