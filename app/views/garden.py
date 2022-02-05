@@ -24,6 +24,7 @@ def queryReadings(values=None, id=1):
     m = []
     x = []
     b = []
+    x2 = []
     
     for reading in readings:
 
@@ -33,8 +34,11 @@ def queryReadings(values=None, id=1):
         xRaw = reading.local
         xProc = xRaw.strftime(format)
         x.append(xProc)
+        x2Raw = reading.recordtime
+        x2Proc = x2Raw.strftime(format)
+        x2.append(x2Proc)
 
-    return (x, t, m, b)
+    return (x, x2, t, m, b)
 
 def queryUnits():
     unitList = []
@@ -54,12 +58,12 @@ def garden():
     else: values =int(request.args.get('values'))
 
     unitList = queryUnits()
-    (x,t,m,b) = queryReadings(values=values,id=id)
+    (x,x2,t,m,b) = queryReadings(values=values,id=id)
     #print(x)
     lastX = x[-1]
     print(lastX)
     
-    return render_template("garden/garden.html", graph_x=x, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, id=id, lastX=lastX)
+    return render_template("garden/garden.html", graph_x=x, graph2_x=x2, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, id=id, lastX=lastX)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
 def timeexample():

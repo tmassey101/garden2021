@@ -38,6 +38,7 @@
     <h2>Unit ID: {{id}}</h2>
     <h3>Last X: {{lastX}}</h3><br>  
     <div id="main" style="width:800px;height:600px;"></div><br>
+    <div id="alt" style="width:800px;height:600px;"></div><br>
     <!--<div id="second" style="width:800px;height:400px;"></div><br>-->
     <img src="{{ url_for('static', filename='assets/img/outsidePi.jpg') }}" height="510">
     
@@ -49,6 +50,7 @@
     }
 
     const labels = {{graph_x|safe}};
+    const labels2 = {{graph2_x|safe}};
     const y1 = {{graph_y1|safe}};
     const y2 = {{graph_y2|safe}};
     const y3 = {{graph2_y|safe}};
@@ -64,15 +66,17 @@
     const data2 = []
     const data3 = []
     const x = []
+    const x2 = []
 
     for(i = 0; i < labels.length; i++){
         ts = formatTimestamp(labels[i]);
+        ts2 = formatTimestamp(labels2[i]);
         console.log(labels[i]);
         data1.push(y1[i]);
         data2.push(y2[i]);
         data3.push(y3[i])
         x.push[labels[i]];
-        //x2.push[labels[i]];
+        x2.push[labels2[i]];
     }
 
     //console.log(data1);
@@ -119,6 +123,18 @@
     }
     };
 
+    var trace4 = {
+    x: labels2,
+    y: data1,
+    name: 'Temperature',
+    type: 'scatter',
+    mode: 'lines',
+    line: {
+        color: color1,
+        width: 3
+    }
+    };
+
     var data = [trace1, trace2, trace3];
 
     var layout = {
@@ -143,14 +159,31 @@
     }
     };
 
-    var dataB = [trace3];
-    var layout2 = {
-    title: 'Battery Status',
-    yaxis: {title: 'Battery Voltage'}
+    var dataB = [trace4];
+    var layoutB = {
+    title: 'Soil Readings',
+    showlegend: true,
+	legend: {
+        x : 0.05,
+        y : 1,
+        "orientation": "v"
+    },
+    yaxis: {
+        title: 'Temperature (&#8451;)/ Battery (V)',
+        range: [0, 30]
+    },
+    yaxis2: {
+        title: 'Moisture Content',
+        //titlefont: {color: color2},
+        //tickfont: {color: color2},
+        overlaying: 'y',
+        side: 'right',
+        range: [750, 850]
+    }
     };
 
     Plotly.newPlot('main', data, layout);
-    Plotly.newPlot('second', dataB, layout2);
+    Plotly.newPlot('alt', dataB, layoutB);
 
     </script>
 </body>
