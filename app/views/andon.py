@@ -29,10 +29,10 @@ def convertTime(readings):
     
     return readings'''
 
-def queryReadings(id):
+def queryReadings():
 
     #readings = Reading.query.filter_by(unitID = id).all()
-    count = digitalRead.query.filter_by(unitID = id).count()
+    count = digitalRead.query.count()
 
     return count
 
@@ -43,7 +43,7 @@ def andonCount():
         id = 0
     else: id = int(request.args.get('id'))
 
-    count = queryReadings(id)
+    count = queryReadings()
     
     msg = "Success. Total entries: " + str(count)
     print(msg)
