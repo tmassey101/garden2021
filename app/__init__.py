@@ -31,10 +31,10 @@ migrate = Migrate(app, db)
 def initialize_database():
     db.create_all()
 
-from app.models.models import Book, Reading
+from app.models.models import Book, Reading, digitalRead
 
 # Import routing, models and Start the App
-from app.views import views, garden, api
+from app.views import views, garden, api, andon
 from app.models import models
 
 

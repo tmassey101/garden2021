@@ -31,3 +31,26 @@ class Reading(db.Model):
 
     def __repr__(self):
         return "<Entry Time: {}>".format(self.timestamp)
+
+class digitalRead(db.Model):
+    __tablename__ = 'digitalreads'
+    id = db.Column('id', db.Integer, unique=True, nullable=False, primary_key=True)
+    timestamp = db.Column('entryTime', db.DateTime, default=datetime.utcnow)
+    recordtime = db.Column('recordtime', db.DateTime, default=datetime.utcnow)
+    sensorID = db.Column('sensorID', db.Integer, default=0)
+    unitID = db.Column('unitID', db.Integer, default=0)
+    count = db.Column('count', db.Integer, default=0)
+    lastState = db.Column('lastState', db.Integer, default=0)
+
+    def __init__(self, recordtime, unitID, sensorID, count, lastState):
+        self.recordtime = recordtime
+        self.sensorID = sensorID
+        self.unitID = unitID
+        self.count = count
+        self.lastState = lastState
+
+    def to_json(self):
+        return dict(id=self.id, count=self.count)
+
+    def __repr__(self):
+        return "<Entry Time: {}>".format(self.timestamp)

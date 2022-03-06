@@ -5,7 +5,7 @@ from flask import Flask, request, render_template
 
 # App modules
 from app        import app, db
-from app.models.models import Reading
+from app.models.models import Reading, digitalRead
 from datetime import datetime
 from pytz import timezone
 
@@ -48,16 +48,25 @@ def insertReading():
         
     return "Success"
 
-'''
-@app.route('/newreading/<temp>', methods=['GET','POST'])
-def newReading(temp):
-    
-    t = Reading(temperature=temp)
-    db.session.add(t)
+@app.route('/digins', methods=['GET'])
+def insertDigital():
+    print("Inserting value")
+
+    if request.args.get("rtime"): recordtime = request.args.get("rtime")
+    else: recordtime = None
+
+    if request.args.get("sensorID"): sensorID = request.args.get("sensorID")
+    else: sensorID = 0
+    if request.args.get("unitID"): unitID = request.args.get("unitID")
+    else: unitID = 0
+
+    if request.args.get("count"): count = request.args.get("count")
+    else: count = None
+    if request.args.get("lastState"): lastState = request.args.get("lastState")
+    else: lastState = None
+
+    digReading = digitalRead(recordtime, unitID, sensorID, count, lastState)
+    db.session.add(digReading)
     db.session.commit()
-    
-    readings = Reading.query.all()
-    localReadings = convertTime(readings)
         
-    return render_template("garden/reading.html", readings=localReadings)
-    '''
+    return count
