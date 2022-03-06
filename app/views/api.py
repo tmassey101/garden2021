@@ -69,4 +69,4 @@ def insertDigital():
     db.session.add(digReading)
     db.session.commit()
         
-    return count
+    return "success"
