@@ -7,7 +7,6 @@ from flask               import render_template, request, url_for, redirect, sen
 from flask_login         import login_user, logout_user, current_user, login_required
 from werkzeug.exceptions import HTTPException, NotFound, abort
 from jinja2              import TemplateNotFound
-from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, DecimalField, FloatField
 from wtforms.validators import DataRequired
