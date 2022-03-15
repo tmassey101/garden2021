@@ -1,11 +1,17 @@
 # Python modules
-import os, logging 
+import os, logging
+from unicodedata import decimal 
 
 # Flask modules
 from flask               import render_template, request, url_for, redirect, send_from_directory
 from flask_login         import login_user, logout_user, current_user, login_required
 from werkzeug.exceptions import HTTPException, NotFound, abort
 from jinja2              import TemplateNotFound
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, IntegerField, DecimalField, FloatField
+from wtforms.validators import DataRequired
+from decimal import *
 
 # App modules
 from app        import app, db
@@ -74,3 +80,53 @@ def returnPost(postName):
     path = "\\static\\assets\\posts\\"+postName+".txt"
     path = basedir + path
     return path
+
+class EnergyForm(FlaskForm):
+    milage = IntegerField('milage', validators=[DataRequired()])
+    mpg = FloatField('mpg', validators=[DataRequired()])
+    energykw = FloatField('EnergyKW', validators=[DataRequired()])
+    poundsLi = FloatField('poundsLi', validators=[DataRequired()])
+    poundsKw = FloatField('poundsKw', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+@app.route('/ccalc', methods=['GET', 'POST'])
+def ccalc():
+
+    form = EnergyForm()
+    milage = 10000
+    mpg = 40.0
+    energyPerKw = 3.0
+    poundsLi = 1.55
+    poundsKw = 0.36  
+
+    # on POST get form values
+    if request.method == 'POST':
+        print('Post request')
+        milage = int(request.form['milage'])
+        mpg = float(request.form['mpg'])
+        energyPerKw = float(request.form['energykw'])
+        poundsLi = float(request.form['poundsLi'])
+        poundsKw = float(request.form['poundsKw'])
+        
+    # calculations
+    totalEnergyKw = round(float(milage/energyPerKw),2)
+    totalFuelLitres =  round(float(4.55 * (milage / mpg)),2)
+    costPerYearKw = round((totalEnergyKw * poundsKw),2)
+    costPerYearLitres = round((totalFuelLitres * poundsLi),2)
+    
+    calculations = [
+        totalEnergyKw,
+        totalFuelLitres,
+        costPerYearKw,
+        costPerYearLitres 
+    ]
+
+    form.milage.data = milage
+    form.mpg.data = mpg
+    form.energykw.data = energyPerKw
+    form.poundsLi.data = poundsLi
+    form.poundsKw.data = poundsKw
+
+    print(calculations)
+
+    return render_template('ccalc.html', form=form, calc=calculations)

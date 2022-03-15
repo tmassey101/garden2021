@@ -1,0 +1,45 @@
+
+
+{% block container %}
+
+<br>
+<br>
+<br>
+<h1>Carbon Calculator</h1>
+
+<form method="POST" action="/ccalc">
+    <table>
+        <th>Carbon Calculator</th>
+        <th>Petrol</th>
+        <th>Electric</th>
+        <tr>
+            <td>Mileage</td>
+            <td>{{ form.milage }}</td>
+        </tr>
+        <tr>
+            <td>MPG // mi/kWh</td>
+            <td>{{ form.mpg }}</td>
+            <td>{{ form.energykw }}</td>
+        </tr>
+        <tr>
+            <td>Energy Use (L / kWh)</td>
+            <td>{{ calc[1] }}</td>>
+            <td>{{ calc[0] }}</td>>
+        </tr>
+        <tr>
+            <td>Energy Per Unit (£ per L / kWh)</td>
+            <td>{{ form.poundsLi }}</td>>
+            <td>{{ form.poundsKw }}</td>>
+        </tr>
+        <tr>
+            <td>Cost (£)</td>
+            <td>{{ calc[3] }}</td>>
+            <td>{{ calc[2] }}</td>>
+        </tr>
+    </table>
+    <input type="submit" value="Go">
+</form>
+
+
+
+{% endblock %}
