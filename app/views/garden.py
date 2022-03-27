@@ -13,9 +13,9 @@ from datetime import datetime
 from pytz import timezone
 import pendulum
 
-def queryReadings(values=None, id=1):
+def queryReadings(values=None, id=None, sensor=None):
 
-    readings = Reading.query.filter_by(unitID = id).all()
+    readings = Reading.query.filter_by(unitID = id,sensorID = sensor).all()
     if values != None:
         readings = readings[-values:]
     readings = convertTime(readings)
@@ -41,29 +41,32 @@ def queryReadings(values=None, id=1):
     return (x, x2, t, m, b)
 
 def queryUnits():
-    unitList = []
+    unitList = [] 
+    sensorList = []
     units = Reading.query.with_entities(Reading.unitID).distinct()
+    sensors = Reading.query.with_entities(Reading.sensorID).distinct()
     for unit in units:
         unitList.append(unit.unitID)
-    return unitList
+    for sensor in sensors:
+        sensorList.append(sensor.sensorID)
+    print(sensorList)
+    return unitList, sensorList
 
 @app.route('/garden', methods=['GET', 'POST'])
-def garden():
-           
+def garden():       
+    unitList, sensorList = queryUnits()
     if request.args.get('id') is None:
-        id = 1
+        id = unitList[0]
     else: id = int(request.args.get('id'))
+    if request.args.get('sensor') is None:
+        sensor = sensorList[0]
+    else: sensor = int(request.args.get('sensor'))
     if request.args.get('values') is None:
         values = 500 #default last 500 values to limit loads
     else: values =int(request.args.get('values'))
-
-    unitList = queryUnits()
-    (x,x2,t,m,b) = queryReadings(values=values,id=id)
-    #print(x)
+    (x,x2,t,m,b) = queryReadings(values=values,id=id, sensor=sensor)
     lastX = x[-1]
-    print(lastX)
-    
-    return render_template("garden/garden.html", graph_x=x, graph2_x=x2, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, id=id, lastX=lastX)
+    return render_template("garden/garden.html", graph_x=x, graph2_x=x2, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, sensorList=sensorList, id=id, sensor=sensor, lastX=lastX)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
 def timeexample():

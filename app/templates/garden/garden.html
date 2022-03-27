@@ -28,6 +28,14 @@
                 <OPTION value=./garden?id={{u}}>{{u}}</option>
             {% endfor %}
         </SELECT>
+        <br>
+    Choose a Node:
+        <SELECT name="node" selected=" " onChange="location = this.value;">
+            <option value="" selected disabled hidden>Choose here</option>
+            {% for n in sensorList %}
+                <OPTION value=./garden?sensor={{n}}>{{n}}</option>
+            {% endfor %}
+        </SELECT>
     <br><br>
         <form action="/garden">
             <label for="quantity">Enter number of values:</label>
@@ -36,6 +44,7 @@
         </form>
     <br>
     <h2>Unit ID: {{id}}</h2>
+    <h2>Sensor ID: {{sensor}}</h2>
     <h3>Last X: {{lastX}}</h3><br>  
     <div id="main" style="width:800px;height:600px;"></div><br>
     <div id="alt" style="width:800px;height:600px;"></div><br>
