@@ -58,6 +58,7 @@ unsigned long ledTimer = millis();
 int ledInc = 1000;  // Increment LED strobe in n ms
 
 char cUpdate[7] = "t/unix"; // message code for requesting time update
+
 char cMessage[msgBuf]; // create buffer of desired size
 char LoRaData[251];    // buffer for Lora message. 251 is maximum chars
 bool readData = true;  // flag to do sensor reading
