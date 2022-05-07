@@ -15,10 +15,11 @@ import pendulum
 
 def queryReadings(values=None, id=None, sensor=None):
 
-    readings = Reading.query.filter_by(unitID = id,sensorID = sensor).all()
-    if values != None:
-        readings = readings[-values:]
-    readings = convertTime(readings)
+    readings = Reading.query.filter_by(unitID = id,sensorID = sensor).order_by(Reading.timestamp.desc()).limit(values).all()
+    '''if values != None:
+        readings = readings[-values:]'''
+    readings.reverse()
+    #readings = convertTime(readings)
     format = "%Y-%m-%dT%H:%M:%S"
     t = []
     m = []
@@ -31,10 +32,10 @@ def queryReadings(values=None, id=None, sensor=None):
         t.append(reading.temperature)
         m.append(reading.moisture)
         b.append(reading.batV)
-        xRaw = reading.local
+        xRaw = reading.timestamp
         xProc = xRaw.strftime(format)
         x.append(xProc)
-        x2Raw = reading.recordtime
+        x2Raw = convertTime(reading.recordtime)
         x2Proc = x2Raw.strftime(format)
         x2.append(x2Proc)
 
@@ -65,7 +66,7 @@ def garden():
         values = 500 #default last 500 values to limit loads
     else: values =int(request.args.get('values'))
     (x,x2,t,m,b) = queryReadings(values=values,id=id, sensor=sensor)
-    lastX = x[-1]
+    lastX = x2[-1]
     return render_template("garden/garden.html", graph_x=x, graph2_x=x2, graph_y1=t, graph_y2=m, graph2_y=b, unitList=unitList, sensorList=sensorList, id=id, sensor=sensor, lastX=lastX)
 
 @app.route('/timeexample', methods=['GET', 'POST'])
@@ -97,22 +98,20 @@ def reading():
     return render_template("garden/reading.html", readings=localReadings)
 
 # function to convert 
-def convertTime(readings):
+def convertTime(timestamp):
     
     targettz = 'Europe/London'
+    #targettz = pendulum.local()
+    
     tz = pendulum.timezone(targettz)
 
-    for reading in readings:
-        timestamp = reading.timestamp
-        p = pendulum.instance(timestamp)
-        q = p.in_timezone(tz)
+    p = pendulum.instance(timestamp)
+    q = p.in_timezone(tz)
 
-        # Formats timestamp to ISO8601 format
-        q.isoformat()
+    # Formats timestamp to ISO8601 format
+    q.isoformat()
 
-        reading.local = q
-    
-    return readings
+    return q
 
 
 

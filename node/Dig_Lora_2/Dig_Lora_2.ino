@@ -1,35 +1,54 @@
+// DIGITAL PIN 2 DOES NOT SUPPORT INTERRUPTS, SO CURRENTLY LOOPING ON TIMER CYCLE
+
 #include <CircularBuffer.h>
 #include <LoRa.h>
-#include "Adafruit_seesaw.h"
+//#include "Adafruit_seesaw.h"
 
 // Watchdog library that reboots unit after certain period of inactivity
 #include <Adafruit_SleepyDog.h>
 
-Adafruit_seesaw ss;
+//Adafruit_seesaw ss;
 
 #define ms_per_hour  3600000
 #define ms_per_min    60000
 #define ms_per_sec    1000
 
-const int devID = 12968; // Dev ID Unit 1
+// Define Unit ID values
+const int devID = 22222; // Dev ID Unit 1
 //const int devID = 11111; // Dev ID Test 
 const int msgBuf = 500; //size of message buffer
 
-unsigned long unixTime = 1; // Placeholder for UnixTime (SECONDS SINCE JAN 01 1970. (UTC))
+// Define Input Pins
+const int digPin = 2;
+const int greenLED = 3;
+const int yellowLED = 6;
+
+// Define increment timers
+const int updateTimerInc = (60 * 30); // Increment (secs) to request time update
+const int sensorInc = 3; // take sensor count every n seconds
+const int incSecs = 10; // reading timer increment
+const int ledInc = 10000;  // Increment LED strobe in n ms
+const int GledInc = 500;
+const int YledInc = 10;
+const int confirmTimerInc = 250;
+
 
 namespace data {
   typedef struct {
-    int timeStamp;
-    int mois;
-    float temp;
+    char type;
+    unsigned long timeStamp;
+    int val1;
+    int val2;
   } record;
 
   void print(record r) {
+    Serial.print(r.type);
+    Serial.print(" / ");
     Serial.print(r.timeStamp);
     Serial.print(" / ");
-    Serial.print(r.mois);
+    Serial.print(r.val1);
     Serial.print(" / ");
-    Serial.print(r.temp);
+    Serial.print(r.val2);
   }
 }
 
@@ -38,28 +57,35 @@ const int bufLen = 100;
 CircularBuffer<data::record, bufLen> structs;
 
 struct sensorReading{
+  char type;
   unsigned long timeStamp;
-  unsigned int mois;
-  float temp;
+  int val1;
+  int val2;
   } record;
   
-sensorReading sensorReading0 = { 0, 0, 0};
+sensorReading sensorReading0 = { 0, 0, 0, 0};
 
-int incSecs = 10; // reading timer increment
+// Set up counter for inputs
+int digCount = 0; 
+byte lastState = 0;
+byte lastSentState = 0;
+
+// Set up Timers
+unsigned long unixTime = 1; // Placeholder for UnixTime (SECONDS SINCE JAN 01 1970. (UTC))
 unsigned long elapsedTime = millis();  // trigger for wait timer
-unsigned long alarmElapse = millis(); // alarm timer
+unsigned long confirmTimer = millis();  // trigger for msg confirmation time-out
+unsigned long msgElapse = millis(); // Timer stores time of last sent message
 unsigned long lastUpdate = millis(); // storage for clock increments (as onboard RTC unreliable)
-const int updateTimerInc = (60 * 30); // Increment (secs) to request time update
-const int sensorInc = 10; // take sensor reading every n seconds
 const int loopFloat = 700; // time in ms for message send to complete (to offset running time to maintain interval)
 
-// LED timer
+// LED timers
 unsigned long ledTimer = millis();
-int ledInc = 1000;  // Increment LED strobe in n ms
+unsigned long yellowLEDTimer = millis();
+unsigned long greenLEDTimer = millis();
 
-char cUpdate[7] = "t/unix"; // message code for requesting time update
 
-char cMessage[msgBuf]; // create buffer of desired size
+char tMessage[7] = "t/unix"; // message code for requesting time update
+char loraMessage[msgBuf]; // create buffer of desired size
 char LoRaData[251];    // buffer for Lora message. 251 is maximum chars
 bool readData = true;  // flag to do sensor reading
 
@@ -68,7 +94,12 @@ int countdownMS = Watchdog.enable(20000); // Set watchdog timer
 void setup()
 {
   Serial.begin(115200);
+
+  // Set pin modes
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(greenLED, OUTPUT);
+  pinMode(digPin, INPUT);
   
   if (!Serial){
     delay(5000);
@@ -80,73 +111,69 @@ void setup()
     while (1);
   }
 
-  setupSoilSensor(); // Initializes sensor library
-  updateUnixTime();  // Request time update and update clock
-
-  /*// Attach interrupt to taking sensor reading
-  rtc.attachInterrupt(updateDataFlag); //when interrupt is triggered, update reading flag
-  */
+  while(1){
+      requestUnixTime();  // Request time update and update clock
+      LoRa.onReceive(onReceive); //onRecieve interrupt, listens for LoRa packets for confirmation
+      LoRa.receive(); // puts radio into recieve mode
+      // Loop if not recieved
+      delay(1000);
+      if(unixTime != 1){
+        break;
+      }
+      Serial.print("No response or not valid. timeInt =");
+      Serial.println("Retrying in 2 seconds...");
+      blinkPin(yellowLED, 2, 500);
+      delay(1000);
+    }
+    /*// Attach interrupt to taking sensor reading
+    rtc.attachInterrupt(updateDataFlag); //when interrupt is triggered, update reading flag
+    */
   
   Serial.flush();
-  blink(5, 100); 
-  //delay(500);
+  blinkPin(greenLED, 5, 100); 
   Serial.println("STARTING UP"); 
 }
 
 void loop()
 {
-  /*
+  /* // DIGITAL PIN 2 DOES NOT SUPPORT INTERRUPTS, SO CURRENTLY LOOPING ON TIMER CYCLE
   if (readData == true){
     takeAnalogReading();
     readData = false;
   }*/
-  
   if (sensorReading0.timeStamp != 0 ) {
-    sendMessage(true, sensorReading0.timeStamp, sensorReading0.mois, sensorReading0.temp);  // sends radio message to base unit for upload to DB
+    sendMessage(sensorReading0.type, sensorReading0.timeStamp, sensorReading0.val1, sensorReading0.val2);  // sends radio message to base unit for upload to DB
     LoRa.onReceive(onReceive); //onRecieve interrupt, listens for LoRa packets
     LoRa.receive(); // puts radio into recieve mode
     
     // Delay to allow for confirmation before moving on
     delay(300);
-    
-    if (recieveConfirmation(sensorReading0.timeStamp)) { // if correct confirmation is recieved
-      Serial.print("Popping: "); Serial.println(sensorReading0.timeStamp); // confirm removal 
-      sensorReading0 = { 0, 0, 0};
+
+    if (sensorReading0.timeStamp != 0 ) {
+        structs.push(data::record{sensorReading0.type, sensorReading0.timeStamp, sensorReading0.val1, sensorReading0.val2});
+        Serial.println("Saving record in buffer");
+        sensorReading0 = {0, 0, 0};
     }
-    else {
-      structs.push(data::record{sensorReading0.timeStamp, sensorReading0.mois, sensorReading0.temp});
-      Serial.println("Saving record in buffer");
-      sensorReading0 = {0, 0, 0};
-    }
-    Serial.println("---");
-    delay(50);
   }
 
   // Checks for entries in buffer. If buffer not empty, tries to send messages and clear buffer
   if (!structs.isEmpty() ){
-    Serial.print("Sending: "); Serial.println(structs.first().timeStamp); 
-    sendMessage(true, structs.first().timeStamp, structs.first().mois, structs.first().temp);  // sends radio message to base unit for upload to DB / true is flag for sensor reading
+    //Serial.print("Sending: "); Serial.println(structs.first().timeStamp); 
+    sendMessage(structs.first().type, structs.first().timeStamp, structs.first().val1, structs.first().val2);  // sends radio message to base unit for upload to DB / true is flag for sensor reading
     delay(20); // Pause briefly to allow hub unit to respond and not recieve old response
     LoRa.onReceive(onReceive); //onRecieve interrupt, listens for LoRa packets for confirmation
     LoRa.receive(); // puts radio into recieve mode
     
     // Delay to allow for confirmation before moving on
     delay(250);
-
-    // If confirmation recieved, remove entry from buffer
-    if (recieveConfirmation(structs.first().timeStamp)) { // if correct confirmation is recieved
-      Serial.print("Confirmed. Shifting: ");
-      data::print(structs.shift());
-      Serial.println();
-      }
     }
   
    // Placeholder function to take reading on timer //
-   if(millis() > alarmElapse + (sensorInc * 1000) - loopFloat){
-      takeAnalogReading();
-      alarmElapse = millis();
+   if(millis() > msgElapse + (sensorInc * 1000) - loopFloat){
+      checkDigitalCount();
+      msgElapse = millis();
    }
-
+   
    // If buffer has entries, print out to Serial for monitoring
    if(millis() > elapsedTime + 10000){
       if (!structs.isEmpty() ){
@@ -168,64 +195,89 @@ void loop()
     }
   }
 
+   // If buffer has entries, print out to Serial for monitoring
+   if(millis() > elapsedTime + 10000){
+      if (!structs.isEmpty() ){
+        Serial.print("Records in Buffer. Total records: ");
+        Serial.println(structs.size());
+        Serial.print("Last Entry:");
+        data::print(structs.last());
+        Serial.println();
+        elapsedTime = millis();
+      }
+   }
+  // Should never be needed, if buffer fills up, remove all entries 
+  if (structs.isFull()) {
+    Serial.println("BUFFER FULL. CLEARING BUFFER");
+    while (!structs.isEmpty()) {
+      data::print(structs.shift());
+      Serial.println();
+    }
+  }
   // If buffer has entries, print out to Serial for monitoring
    if(millis() > lastUpdate + (updateTimerInc * 1000)) {
-      updateUnixTime();
+      requestUnixTime();
    }
-  
-  // Strobe LED each defined interval
+     
+  // Strobe BuiltIn LED each defined interval
   if(millis() > ledTimer + ledInc){
-    alterLED();
+    alterLED(LED_BUILTIN);
     ledTimer = millis();
   }
-  
-  //delay(5);
+  if(millis() > yellowLEDTimer + YledInc){
+    digitalWrite(yellowLED, LOW);
+    yellowLEDTimer = millis();  
+  }
+  if(millis() > greenLEDTimer + GledInc){
+    digitalWrite(greenLED, LOW);
+    greenLEDTimer = millis();  
+  }
+
+  // Read input pin value
+  checkDigitalReading();
+
+  // Placeholder function to take reading on timer //
+  if(millis() > msgElapse + (sensorInc * 1000) - loopFloat){
+    //takeAnalogReading();
+    checkDigitalCount();
+    msgElapse = millis();
+  }
+
+  // Reset Watchdog timer
+  countdownMS = Watchdog.enable(20000);
+
+  // delay(250);
 }
+  
 /*
+// DIGITAL PIN 2 DOES NOT SUPPORT INTERRUPTS, SO CURRENTLY LOOPING ON TIMER CYCLE
 void updateDataFlag() {
   readData = true;
 }*/
+void requestUnixTime (){
+  Serial.println("Updating Unix Time");
+  //Request time packet
+  Serial.println("Requesting time update");
+  sendMessage('t',0,0,0); // 'false' is flag to send update message signal
+}
 
-void updateUnixTime (){
-  unsigned long timeInt;
-  
-  while (1) {
-    Serial.println("Updating Unix Time");
-    //Request time packet
-    Serial.println("Requesting time update");
-    sendMessage(false,0,0,0); // 'false' is flag to send update message signal
+void updateUnixTime(){
+  lastUpdate = millis(); // Updates lastUpdate flag with current CPU clock to calculate increment later
 
-    LoRa.onReceive(onReceive);
-    LoRa.receive();
-    delay(500);
-    Serial.println(LoRaData);
-    
-    lastUpdate = millis(); // Updates lastUpdate flag with current CPU clock to calculate increment later
-  
-    char timeBuf[10];
-      for (int i=6;i<16;i++){
-        timeBuf[i-6] = LoRaData[i];
-      }
-    timeInt = atoi(timeBuf);
-    //Serial.print("timeInt: "); Serial.println(timeInt);
-    
-    if (checkTime(timeInt) == true){
-      blink(5, 50);
-      break;
+  char timeBuf[10];
+    for (int i=6;i<16;i++){
+      timeBuf[i-6] = LoRaData[i];
     }
-    
-    // Loop if not recieved
-    Serial.print("No response or not valid. timeInt ="); Serial.println(timeInt);
-    Serial.println("Retrying in 2 seconds...");
-    blink(2, 1000);
-    delay(500);
-    countdownMS = Watchdog.enable(20000);
-  }
-    
-  unixTime = timeInt;
-  Serial.print("New unixTime set: ");
-  Serial.println(unixTime);
+  unsigned long timeInt = atoi(timeBuf);
+  //Serial.print("timeInt: "); Serial.println(timeInt);
   
+  if (checkTime(timeInt) == true){
+    blinkPin(greenLED, 3, 100);
+    unixTime = timeInt;
+    Serial.print("New unixTime set: ");
+    Serial.println(unixTime);
+  }
+
   //Reset watchdog timer at end of loop
   countdownMS = Watchdog.enable(20000);
 }
@@ -238,7 +290,7 @@ unsigned long getUnixStamp (){
     unsigned long timeInc = now - lastUpdate;
     unixStamp = unixTime + int(timeInc/1000);
     if (checkTime(unixStamp) == false){
-      Serial.println("timecheck failed. Request update");
+      Serial.println("Timecheck failed. Request update");
       updateUnixTime();  
     }
     else { break; }  
@@ -249,76 +301,83 @@ unsigned long getUnixStamp (){
 
 bool checkTime(unsigned long timeInt) {
   if ( ( timeInt > 1648978179 ) && ( timeInt < 2000000000 ))// check time recieved is in acceptable range
-  {
-    return true;
-  }
+  { return true; }
   else {
     Serial.println("Unix Time corrupted.");
     return false;
   }
 }
 
-// Interupt routine - takes sensor temp and capacitive moisure values in temporary storage, then increments alarm for next reading
-void takeAnalogReading() { 
-  
-  Serial.println("takeAnalogReading");
-  float tempC = ss.getTemp();
-  uint16_t capread = ss.touchRead(0); 
-
-  // For testing without sensor
-  //float tempC = 0.0;
-  //uint16_t capread = 0;
-
-  unsigned long timestamp = getUnixStamp();
-  
-  sensorReading0.temp = tempC;
-  sensorReading0.mois = capread;
-  sensorReading0.timeStamp = timestamp;
-
-  Serial.print("Taken reading at ");
-  Serial.println(sensorReading0.timeStamp);
-  blink(3, 100); // blink for confirmation
-
-  //Reset watchdog timer at end of loop
-  countdownMS = Watchdog.enable(20000);
+// the loop routine runs over and over again forever:
+void checkDigitalReading() {
+  // read the input pin:
+  byte pinState = digitalRead(digPin);
+  if (pinState == 1){
+    digitalWrite(yellowLED, HIGH); 
+    if (lastState == 0) {
+      lastState = 1;
+      digCount++;
+      // print out the state of the button & count:
+      Serial.print("Digital Input: ");Serial.print(pinState);
+      Serial.print(" // Digital Count: "); Serial.println(digCount);
+    }
+  }
+  else if (pinState == 0){
+    if (lastState == 1){
+      lastState = 0;
+    }
+  }
 }
 
-void sendMessage(bool type, int timeStamp, int mois, float temp) {   // sends passed string as LoRa message
-  //Serial.println("sendMessage");
-  if (type == true){
-    int tempInt = temp*100; 
+// checks counter for any inputs, creates message if not 0
+void checkDigitalCount(){
+  if (digCount != 0 || lastSentState != lastState){
+    char type = 'd';
+    sensorReading0.type = type;
+    sensorReading0.val1 = digCount;
+    sensorReading0.val2 = lastState;
+    unsigned long timestamp = getUnixStamp();
+    sensorReading0.timeStamp = timestamp;
 
-    // creates message string, adds leading 0 to timestamp int if needed for sending
-    if (timeStamp < 100000){ 
-      snprintf(cMessage,msgBuf,"p/%d/%d/0%d/%d", tempInt, mois, timeStamp, devID); 
-    }
-    else {
-      snprintf(cMessage,msgBuf,"p/%d/%d/%d/%d", tempInt, mois, timeStamp, devID); 
-    }
-    LoRa.beginPacket();                   // start packet
-    LoRa.print(cMessage);                 // add payload
-    LoRa.endPacket();                     // finish packet and send it
-    Serial.print("Sent: "); Serial.println(cMessage);
+    Serial.print("Taken reading at ");
+    Serial.println(sensorReading0.timeStamp);
+
+    // Reset input counter to 0
+    digCount = 0;
+    lastSentState = lastState;
+    
+    //Reset watchdog timer at end of loop
+    countdownMS = Watchdog.enable(20000);
   }
-  else {  // Send message for time update
-    LoRa.beginPacket();                   // start packet
-    LoRa.print(cUpdate);                 // add payload
-    LoRa.endPacket();                     // finish packet and send it
-    Serial.print("Sent: "); Serial.println(cUpdate); 
+}
+
+void sendMessage(char type, int timeStamp, int val1, int val2) {   // sends passed string as LoRa message
+  // creates message string, adds leading 0 to timestamp int if needed for sending
+  snprintf(loraMessage,msgBuf,"%c/%d/%d/%d/%d", type, val1, val2, timeStamp, devID);
+  
+  LoRa.beginPacket();                   // start packet
+  if (type == 't') {  // Send custom message for time update
+    LoRa.print(tMessage); 
+    Serial.print("Sent: "); Serial.println(tMessage);
   }
+  else {
+    LoRa.print(loraMessage);                 // add payload
+    Serial.print("Sent: "); Serial.println(loraMessage);
+  }
+  LoRa.endPacket();                     // finish packet and send it
 }
 
 bool recieveConfirmation(unsigned long timestamp) {
   //Serial.println("recieveConfirmation");
   char charLora[10];
   for(int i=0;i<10;i++){
-    charLora[i] = LoRaData[i+4];
+    charLora[i] = LoRaData[i+6];
   }
   int recTime = atoi(charLora);
 
   char charID[5];
   for(int i=0;i<5;i++){
-    charID[i] = LoRaData[i+4+10+1];
+    charID[i] = LoRaData[i+6+10+1];
   }
   int recID = atoi(charID);
   
@@ -334,6 +393,7 @@ bool recieveConfirmation(unsigned long timestamp) {
 }
 
 void onReceive(int packetSize) {
+  
   // received a packet
   Serial.print("Received packet '");
 
@@ -346,18 +406,46 @@ void onReceive(int packetSize) {
   // print RSSI of packet
   Serial.print("' with RSSI ");
   Serial.println(LoRa.packetRssi());
-}
+  char target = LoRaData[4];
+   
+  switch(target){
+    case ('t'):
+      //Serial.print("Message Type = ");Serial.println("Time update");
+      updateUnixTime();
+      break;
+    case ('c'):
+      //Serial.print("Message Type = ");Serial.println("Message Confirmation");
+      if (recieveConfirmation(sensorReading0.timeStamp)) { // if correct confirmation is recieved
+        Serial.print("Popping: "); Serial.println(sensorReading0.timeStamp); // confirm removal 
+        sensorReading0 = { 0, 0, 0};
+        digitalWrite(greenLED, HIGH);
+        greenLEDTimer = millis();
+      }
+      
+      // If confirmation recieved, remove entry from buffer
+      else if (recieveConfirmation(structs.first().timeStamp)) { // if correct confirmation is recieved
+        Serial.print("Confirmed. Shifting: ");
+        data::print(structs.shift());
+        Serial.println();
+        digitalWrite(greenLED, HIGH);
+        greenLEDTimer = millis();
+      }
 
-
-void setupSoilSensor() {
-  //Serial.println("seesaw Soil Sensor example!");
-  if (!ss.begin(0x36)) {
-    Serial.println("ERROR! seesaw not found");
-    while (1) delay(1);
-  } else {
-    Serial.print("seesaw started! version: ");
-    Serial.println(ss.getVersion(), HEX);
+      else {
+        Serial.println("Confirmation not valid. Ignored");
+      }
+      break;
+    case ('z'):
+      break;
+    case ('p'):
+    break;
+    default:
+      Serial.print("Message type not recognised: "); Serial.println(LoRaData);
+      break;
   }
+  Serial.println("---");
+  // Delay to wait for new message to clear
+  delay(50);
 }
 
 void blink(int count, int pause) {
@@ -369,7 +457,15 @@ void blink(int count, int pause) {
   }
 }
 
+void blinkPin(int pin,int count, int pause) {
+  for (int i = 0; i < count; i++) {
+    digitalWrite(pin, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(pause);                       // wait for a second
+    digitalWrite(pin, LOW);    // turn the LED off by making the voltage LOW
+    delay(pause);
+  }
+}
 
-void alterLED(){
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+void alterLED(int led){
+  digitalWrite(led, !digitalRead(led));
 }
